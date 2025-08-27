@@ -166,6 +166,13 @@ app.use('/api/page-content', pageContentRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/events-page-content', eventsPageContentRoutes);
 
+
+// Health check endpoint to verify DB connectivity
+app.get('/api/health', (_req, res) => {
+  const state = mongoose.connection.readyState; // 0=disconnected,1=connected,2=connecting,3=disconnecting
+  res.json({ ok: true, dbConnected: state === 1, dbState: state });
+});
+
 // Note: Static file serving for uploads removed - all images now served from Cloudinary
 
 // Error handling middleware
@@ -218,9 +225,10 @@ const connectDB = async () => {
     }
 
     await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 20000,
+      connectTimeoutMS: 20000,
+      family: 4
     });
 
     isDbConnected = true;

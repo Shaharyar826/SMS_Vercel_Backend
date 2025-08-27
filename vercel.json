@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "app.js",
+      "src": "./server.js",
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
@@ -13,15 +13,16 @@
           "models/**",
           "routes/**",
           "utils/**",
+          "public/**",
+          "templates/**",
           "package.json"
         ]
       }
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.js"
-    }
+    { "src": "/api/health", "dest": "app.js" },
+    { "src": "/(.*)", "dest": "app.js" }
   ]
 }
+
