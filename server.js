@@ -53,7 +53,8 @@ app.use(cors({
     // List of allowed origins
     const allowedOrigins = [
       'http://localhost:5173',
-      'https://schoollms.loca.lt'
+      'https://schoollms.loca.lt',
+      'https://schoolpro-chi.vercel.app'
     ];
 
     // Allow all ngrok and localtunnel domains
