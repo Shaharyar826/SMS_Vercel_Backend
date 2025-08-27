@@ -1,14 +1,6 @@
-const mongoose = require('mongoose');
 const User = require('../models/User');
-const dotenv = require('dotenv');
 
-// Load env vars
-dotenv.config();
-
-// Connect to DB
-mongoose.connect(process.env.MONGODB_URI);
-
-// Create default admin and principal accounts
+// Create default admin and principal accounts using existing mongoose connection
 const createDefaultAccounts = async () => {
   try {
     console.log('Checking for default accounts...');

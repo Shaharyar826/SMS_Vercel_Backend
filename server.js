@@ -198,27 +198,47 @@ if (process.env.NODE_ENV === 'production') {
 const errorHandler = require('./middleware/error');
 app.use(errorHandler);
 
-// MongoDB connection
+// MongoDB connection with caching for serverless environments
+let isDbConnected = false;
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    // Already connected
+    if (isDbConnected || mongoose.connection.readyState === 1) return;
+
+    // If already connecting, wait for it
+    if (mongoose.connection.readyState === 2) {
+      await new Promise((resolve, reject) => {
+        mongoose.connection.once('connected', () => {
+          isDbConnected = true;
+          resolve();
+        });
+        mongoose.connection.once('error', reject);
+      });
+      return;
+    }
+
+    await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
     });
+
+    isDbConnected = true;
   } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
+    console.error('MongoDB connection error:', error.message);
+    throw error;
   }
 };
 
 // Import seeder
 const { createDefaultAccounts } = require('./utils/seeder');
 
-// Connect to database
-connectDB().then(() => {
-  // Create default admin and principal accounts
-  createDefaultAccounts();
-});
+// Connect to database once per cold start
+connectDB()
+  .then(() => createDefaultAccounts())
+  .catch((e) => {
+    console.error('Initial DB connection failed:', e.message);
+  });
 
 // Export the Express app for serverless platforms (e.g., Vercel)
 module.exports = app;
