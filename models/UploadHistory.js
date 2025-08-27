@@ -44,6 +44,8 @@ const UploadHistorySchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  suppressReservedKeysWarning: true
 });
 
 module.exports = mongoose.model('UploadHistory', UploadHistorySchema);

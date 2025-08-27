@@ -220,67 +220,72 @@ connectDB().then(() => {
   createDefaultAccounts();
 });
 
-// Server setup
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Export the Express app for serverless platforms (e.g., Vercel)
+module.exports = app;
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.error('=== UNHANDLED PROMISE REJECTION ===');
-  console.error('Error:', err);
-  console.error('Stack:', err.stack);
-  console.error('Promise:', promise);
-  console.error('NODE_ENV:', process.env.NODE_ENV);
+// Start the server only when this file is executed directly (not when imported)
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 
-  // In development, don't exit the process to allow for debugging
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
-    console.error('Server continuing in development mode...');
-    return;
-  }
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (err, promise) => {
+    console.error('=== UNHANDLED PROMISE REJECTION ===');
+    console.error('Error:', err);
+    console.error('Stack:', err.stack);
+    console.error('Promise:', promise);
+    console.error('NODE_ENV:', process.env.NODE_ENV);
 
-  // In production, gracefully close server and exit
-  console.error('Shutting down server due to unhandled promise rejection...');
-  server.close(() => {
-    console.error('Server closed. Exiting process...');
+    // In development, don't exit the process to allow for debugging
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+      console.error('Server continuing in development mode...');
+      return;
+    }
+
+    // In production, gracefully close server and exit
+    console.error('Shutting down server due to unhandled promise rejection...');
+    server.close(() => {
+      console.error('Server closed. Exiting process...');
+      process.exit(1);
+    });
+  });
+
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (err) => {
+    console.error('=== UNCAUGHT EXCEPTION ===');
+    console.error('Error:', err);
+    console.error('Stack:', err.stack);
+    console.error('NODE_ENV:', process.env.NODE_ENV);
+
+    // In development, don't exit the process
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+      console.error('Server continuing in development mode...');
+      return;
+    }
+
+    // In production, exit immediately
+    console.error('Shutting down server due to uncaught exception...');
     process.exit(1);
   });
-});
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('=== UNCAUGHT EXCEPTION ===');
-  console.error('Error:', err);
-  console.error('Stack:', err.stack);
-  console.error('NODE_ENV:', process.env.NODE_ENV);
-
-  // In development, don't exit the process
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
-    console.error('Server continuing in development mode...');
-    return;
-  }
-
-  // In production, exit immediately
-  console.error('Shutting down server due to uncaught exception...');
-  process.exit(1);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('=== SIGTERM RECEIVED ===');
-  console.log('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Process terminated');
-    process.exit(0);
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('=== SIGTERM RECEIVED ===');
+    console.log('SIGTERM received. Shutting down gracefully...');
+    server.close(() => {
+      console.log('Process terminated');
+      process.exit(0);
+    });
   });
-});
 
-process.on('SIGINT', () => {
-  console.log('=== SIGINT RECEIVED ===');
-  console.log('SIGINT received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Process terminated');
-    process.exit(0);
+  process.on('SIGINT', () => {
+    console.log('=== SIGINT RECEIVED ===');
+    console.log('SIGINT received. Shutting down gracefully...');
+    server.close(() => {
+      console.log('Process terminated');
+      process.exit(0);
+    });
   });
-});
+}

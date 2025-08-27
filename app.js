@@ -1,10 +1,4 @@
-const express = require('express');
-const app = express();
-const uploadRoutes = require('./routes/upload.routes');
-const eventsPageContentRoutes = require('./routes/eventsPageContent.routes');
-
-// Mount routes
-app.use('/api/upload', uploadRoutes);
-app.use('/api/events-page-content', eventsPageContentRoutes);
-
-// ... existing code ... 
+// Vercel serverless entry point: export the Express app
+// We import the app from server.js (which only starts a server when run directly)
+const app = require('./server');
+module.exports = app;
