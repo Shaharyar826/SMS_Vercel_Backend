@@ -224,7 +224,12 @@ const connectDB = async () => {
       return;
     }
 
-    await mongoose.connect(process.env.MONGODB_URI, {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      console.error('MONGODB_URI is not defined in environment');
+      throw new Error('Missing MONGODB_URI');
+    }
+    await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 20000,
       connectTimeoutMS: 20000,
