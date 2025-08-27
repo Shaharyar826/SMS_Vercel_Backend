@@ -43,21 +43,25 @@ const apiLimiter = rateLimit({
 app.use('/api', apiLimiter);
 
 // CORS configuration
-app.use(cors({
-  // Allow requests from any origin in development
-  // In production, you would want to restrict this
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc)
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
 
-    // List of allowed origins
+    // Explicitly allowed origins
     const allowedOrigins = [
       'http://localhost:5173',
       'https://schoollms.loca.lt',
-      'https://schoolpro-chi.vercel.app'
-    ];
+      'https://schoolpro-chi.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
 
-    // Allow all ngrok and localtunnel domains
+    // Allow Vercel preview deployments for this project
+    if (/^https:\/\/schoolpro-chi-.*\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow ngrok and localtunnel domains during testing
     if (
       origin.includes('ngrok-free.app') ||
       origin.includes('ngrok.io') ||
@@ -67,16 +71,17 @@ app.use(cors({
     }
 
     // Check if origin is in allowed list
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    // For development, allow all origins
+    // In non-production, allow all origins to ease local development
     if (process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
 
-    callback(new Error('Not allowed by CORS'));
+    // Otherwise, reject
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -90,7 +95,9 @@ app.use(cors({
     'Pragma',
     'ngrok-skip-browser-warning'
   ]
-}));
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Standard middleware
 app.use(express.json({ limit: '10mb' }));
