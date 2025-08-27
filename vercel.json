@@ -1,27 +1,6 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "app.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "server.js",
-          "config/**",
-          "controllers/**",
-          "middleware/**",
-          "models/**",
-          "routes/**",
-          "utils/**",
-          "package.json"
-        ]
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.js"
-    }
-  ]
+  "builds": [{ "src": "app.js", "use": "@vercel/node",
+    "config": { "includeFiles": ["server.js","config/**","controllers/**","middleware/**","models/**","routes/**","utils/**","templates/**","public/**","package.json"] }}],
+  "routes": [{ "src": "/(.*)", "dest": "app.js" }]
 }
